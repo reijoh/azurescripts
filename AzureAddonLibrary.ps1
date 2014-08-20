@@ -38,8 +38,8 @@ function New-AzureVNet {
   .EXAMPLE
   New-AzureVNet -NewDnsServerName dc1 -NewDnsServerIP 10.0.10.4 -NewVNetName domainvlan -NewVNetLocation "West Europe" -ConfigFile 'C:\Temp\AzureVNetConfig.XML'
   #>
-  [CmdletBinding()]
-  param 
+  [CmdletBinding(SupportsShouldProcess=$True,ConfirmImpact='Low')]
+  param
   (
   [Parameter(Mandatory=$true)]
   [string]$NewDnsServerName,
@@ -143,8 +143,10 @@ function New-AzureVNet {
     Write-Verbose "Saving new VNet XML configuration to $configFile"
     $newVNetConfig.Save($ConfigFile)
 
-    Write-Verbose "Provisioning new VNet configuration from $configFile"
-    Set-AzureVNetConfig -ConfigurationPath $ConfigFile | Out-Null
+    If ($PSCmdlet.ShouldProcess((Get-AzureSubscription).SubscriptionName){
+      Write-Verbose "Provisioning new VNet configuration from $configFile"
+      Set-AzureVNetConfig -ConfigurationPath $ConfigFile | Out-Null
+    }
 
   end {
     Write-Verbose "Deleting $ConfigFile if it exists"
